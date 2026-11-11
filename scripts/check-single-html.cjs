@@ -28,13 +28,19 @@ const test = String.raw`
     check('파일에 포함된 풍경 이미지', true);
     const scene = document.querySelector('.scene');
     const bounds = scene.getBoundingClientRect();
-    for (let i = 0; i <= 80; i++) {
-      const angle = i / 80 * Math.PI * 2;
-      scene.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientX: bounds.width / 2 + Math.cos(angle) * 120, clientY: bounds.height / 2 + Math.sin(angle) * 120 }));
-      await pause(20);
+    async function drawCircle() {
+      for (let i = 0; i <= 80; i++) {
+        const angle = i / 80 * Math.PI * 2;
+        scene.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientX: bounds.width / 2 + Math.cos(angle) * 120, clientY: bounds.height / 2 + Math.sin(angle) * 120 }));
+        await pause(20);
+      }
     }
     const prince = document.querySelector('#prince');
-    check('원을 그리면 배 위의 왕자님 등장', !prince.hidden);
+    const princess = document.querySelector('#princess');
+    await drawCircle();
+    check('첫 원에는 배 위의 왕자님만 등장', !prince.hidden && princess.hidden);
+    await drawCircle();
+    check('두 번째 원에는 호숫가의 공주님도 등장', !prince.hidden && !princess.hidden);
     const first = prince.getBoundingClientRect().left;
     await pause(1600);
     check('배가 호수 위에서 이동', Math.abs(prince.getBoundingClientRect().left - first) > 5 || matchMedia('(prefers-reduced-motion: reduce)').matches);

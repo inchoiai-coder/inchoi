@@ -9,9 +9,9 @@ const source = readFileSync(new URL('../prince.js', import.meta.url), 'utf8').re
 function setup(getUserMedia) {
   const elements = new Map();
   const windowEvents = {};
-  for (const id of ['.scene', '#prince', '#gesture-status', '#camera-toggle', '#camera-status', '#camera-preview', '#preview-video', '#face-canvas', '#prince-close']) {
+  for (const id of ['.scene', '#prince', '#princess', '#gesture-status', '#camera-toggle', '#camera-status', '#camera-preview', '#preview-video', '#face-canvas', '#prince-close']) {
     elements.set(id, {
-      hidden: ['#prince', '#camera-preview', '#face-canvas'].includes(id),
+      hidden: ['#prince', '#princess', '#camera-preview', '#face-canvas'].includes(id),
       disabled: false, style: {}, attributes: {}, events: {}, srcObject: null,
       addEventListener(name, handler) { this.events[name] = handler; },
       setAttribute(name, value) { this.attributes[name] = value; },
@@ -34,7 +34,7 @@ function setup(getUserMedia) {
   } };
 }
 
-test('drawing a circle reveals the prince without requesting camera access', () => {
+test('two circles reveal the prince and then the princess without requesting camera access', () => {
   let requests = 0;
   const app = setup(() => { requests++; });
   for (let i = 0; i <= 80; i++) {
@@ -42,9 +42,18 @@ test('drawing a circle reveals the prince without requesting camera access', () 
     app.move(500 + Math.cos(angle) * 130, 400 + Math.sin(angle) * 130);
   }
   assert.equal(app.elements.get('#prince').hidden, false);
+  assert.equal(app.elements.get('#princess').hidden, true);
+  assert.match(app.elements.get('#gesture-status').textContent, /한 번 더/);
+  for (let i = 1; i <= 80; i++) {
+    const angle = i / 80 * Math.PI * 2;
+    app.move(500 + Math.cos(angle) * 130, 400 + Math.sin(angle) * 130);
+  }
+  assert.equal(app.elements.get('#prince').hidden, false);
+  assert.equal(app.elements.get('#princess').hidden, false);
   assert.equal(requests, 0);
   app.elements.get('#prince-close').events.click();
   assert.equal(app.elements.get('#prince').hidden, true);
+  assert.equal(app.elements.get('#princess').hidden, false);
 });
 
 test('camera button starts face tracking with the preview, with microphone disabled; turning off releases it', async () => {

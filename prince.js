@@ -3,6 +3,7 @@ import { createFaceTracker } from './face-tracker.js';
 
 const scene = document.querySelector('.scene');
 const prince = document.querySelector('#prince');
+const princess = document.querySelector('#princess');
 const gestureStatus = document.querySelector('#gesture-status');
 const cameraButton = document.querySelector('#camera-toggle');
 const cameraStatus = document.querySelector('#camera-status');
@@ -11,7 +12,6 @@ const previewVideo = document.querySelector('#preview-video');
 const faceCanvas = document.querySelector('#face-canvas');
 let trail = [];
 let lastPointTime = -Infinity;
-let lastSummon = -Infinity;
 let stream = null;
 let faceTracker = null;
 let cameraSession = 0;
@@ -36,13 +36,12 @@ function showPrince() {
       duration: 14000, iterations: Infinity, direction: 'alternate', easing: 'ease-in-out',
     });
   }
-  gestureStatus.textContent = stream ? '왕자님이 배를 타고 호수를 산책해요! 내 얼굴도 함께 움직여요.' : '왕자님이 배를 타고 왔다 갔다 해요! ‘내 얼굴 켜기’로 얼굴을 바꿔 보세요.';
 }
 
 scene.addEventListener('pointermove', event => {
+  if (!prince.hidden && !princess.hidden) return;
   if (event.target.closest('.camera-controls, button')) { trail = []; return; }
   const now = performance.now();
-  if (now - lastSummon < 1800) return;
   if (now - lastPointTime > 550) trail = [];
   const bounds = scene.getBoundingClientRect();
   const point = { x: event.clientX - bounds.left, y: event.clientY - bounds.top, time: now };
@@ -51,11 +50,15 @@ scene.addEventListener('pointermove', event => {
   lastPointTime = now;
   trail.push(point);
   trail = trail.filter(point => now - point.time < 4500).slice(-400);
-  const center = recognizeCircle(trail);
-  if (!center) return;
-  lastSummon = now;
+  if (!recognizeCircle(trail)) return;
   trail = [];
-  showPrince();
+  if (prince.hidden) {
+    showPrince();
+    gestureStatus.textContent = princess.hidden ? '원을 한 번 더 그리면 공주님이 나타나요.' : '왕자님이 다시 호수에 나타났어요.';
+  } else {
+    princess.hidden = false;
+    gestureStatus.textContent = '공주님이 호숫가에 나타났어요.';
+  }
 });
 
 scene.addEventListener('pointerleave', () => { trail = []; });
