@@ -79,11 +79,27 @@ button:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
 #princess-face-canvas { display: block; border-radius: 50%; }
 .prince-label { position: absolute; bottom: -18px; width: 100%; margin: 0; text-align: center; font-size: 13px; letter-spacing: .12em; color: #fff1c9; text-shadow: 0 1px 6px #12382c; }
 .prince-close { position: absolute; top: 8px; right: 18%; width: 28px; height: 28px; border: 1px solid #fff6; border-radius: 50%; background: #17372ac9; color: #fff4ce; font-size: 22px; line-height: 1; pointer-events: auto; }
-.princess { position: absolute; bottom: 3%; left: 40%; width: min(16vw, 24svh, 180px); z-index: 3; transform: translateX(-50%); pointer-events: none; animation: princess-appear .6s ease-out; }
+.princess {
+  --walk-distance: min(5vw, 60px);
+  position: absolute;
+  bottom: 3%;
+  left: 40%;
+  width: min(16vw, 24svh, 180px);
+  z-index: 3;
+  transform: translateX(-50%);
+  pointer-events: none;
+  animation: princess-appear .6s ease-out, princess-walk 6s ease-in-out infinite alternate;
+}
 .princess svg { display: block; width: 100%; height: auto; }
+.princess-wave { transform-box: view-box; transform-origin: 138px 128px; animation: princess-wave 1s ease-in-out infinite alternate; }
 @keyframes princess-appear { from { opacity: 0; } to { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { .boat-rock, .boat-oar, .boat-ripples, .princess { animation: none; } }
-@media (orientation: portrait) { .landscape { object-position: 24% center; } .princess { left: 78%; width: min(26vw, 150px); } }
+@keyframes princess-walk {
+  from { transform: translateX(calc(-50% - var(--walk-distance))); }
+  to { transform: translateX(calc(-50% + var(--walk-distance))); }
+}
+@keyframes princess-wave { from { transform: rotate(-13deg); } to { transform: rotate(14deg); } }
+@media (prefers-reduced-motion: reduce) { .boat-rock, .boat-oar, .boat-ripples, .princess, .princess-wave { animation: none; } }
+@media (orientation: portrait) { .landscape { object-position: 24% center; } .princess { --walk-distance: min(6vw, 55px); left: 78%; width: min(26vw, 150px); } }
 @media (max-width: 600px) { .camera-controls { top: 16px; right: 16px; width: 205px; padding: 12px; } .caption { bottom: 56px; } }
 
 </style>
@@ -168,7 +184,7 @@ button:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
         <button id="prince-close" class="prince-close" type="button" aria-label="왕자님 숨기기">×</button>
       </section>
       <div id="princess" class="princess" hidden>
-        <svg viewBox="0 0 180 270" role="img" aria-label="호숫가에 서 있는 공주님">
+        <svg viewBox="0 0 180 270" role="img" aria-label="호숫가에서 손을 흔드는 공주님">
         <defs>
           <linearGradient id="princess-dress" x2="1" y2="1">
             <stop stop-color="#e6a7c0"/><stop offset=".55" stop-color="#a85687"/><stop offset="1" stop-color="#643757"/>
@@ -179,7 +195,8 @@ button:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
         <path d="M66 140 Q59 184 24 238 Q51 257 90 254 Q129 255 156 238 Q123 181 113 140Z" fill="url(#princess-dress)" stroke="#f1cf92" stroke-width="2"/>
         <path d="M75 148 Q71 197 52 242 M102 149 Q109 206 132 242" fill="none" stroke="#f8c9dd" stroke-width="2" opacity=".65"/>
         <path d="M31 231 Q90 252 149 231" fill="none" stroke="#f1cf92" stroke-width="2"/>
-        <path d="M65 102 Q48 110 45 126 L32 161 Q34 168 42 167 L65 137 M115 102 Q132 110 135 126 L148 161 Q146 168 138 167 L115 137" fill="#f6d4bb" stroke="#9c5a70" stroke-width="2"/>
+        <path d="M65 102 Q48 110 45 126 L32 161 Q34 168 42 167 L65 137 M115 103 Q131 109 143 121 Q149 126 143 132 Q139 136 133 132 L115 121Z" fill="#f6d4bb" stroke="#9c5a70" stroke-width="2"/>
+        <path class="princess-wave" d="M132 127 Q141 116 148 101 L148 92 Q147 88 149 86 Q151 86 152 90 L154 91 L158 80 Q159 77 161 78 Q163 79 161 84 L160 89 L164 82 Q166 80 167 82 Q168 84 165 89 L163 93 L168 89 Q171 88 171 91 Q171 93 165 99 L160 105 Q153 125 144 133 Q137 137 132 127Z" fill="#f6d4bb" stroke="#9c5a70" stroke-width="2" stroke-linejoin="round"/>
         <path d="M80 88 L79 104 L90 114 L102 104 L100 88" fill="#f6d4bb"/>
         <path d="M77 99 Q79 109 90 111 Q101 109 104 99 Q129 102 134 117 L120 132 L113 146 Q90 155 67 146 L60 132 L46 117 Q51 103 77 99Z" fill="#af5d88" stroke="#f1cf92" stroke-width="2"/>
         <path d="M68 140 Q90 150 113 140" fill="none" stroke="#f1cf92" stroke-width="4"/>

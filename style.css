@@ -70,9 +70,25 @@ button:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
 #princess-face-canvas { display: block; border-radius: 50%; }
 .prince-label { position: absolute; bottom: -18px; width: 100%; margin: 0; text-align: center; font-size: 13px; letter-spacing: .12em; color: #fff1c9; text-shadow: 0 1px 6px #12382c; }
 .prince-close { position: absolute; top: 8px; right: 18%; width: 28px; height: 28px; border: 1px solid #fff6; border-radius: 50%; background: #17372ac9; color: #fff4ce; font-size: 22px; line-height: 1; pointer-events: auto; }
-.princess { position: absolute; bottom: 3%; left: 40%; width: min(16vw, 24svh, 180px); z-index: 3; transform: translateX(-50%); pointer-events: none; animation: princess-appear .6s ease-out; }
+.princess {
+  --walk-distance: min(5vw, 60px);
+  position: absolute;
+  bottom: 3%;
+  left: 40%;
+  width: min(16vw, 24svh, 180px);
+  z-index: 3;
+  transform: translateX(-50%);
+  pointer-events: none;
+  animation: princess-appear .6s ease-out, princess-walk 6s ease-in-out infinite alternate;
+}
 .princess svg { display: block; width: 100%; height: auto; }
+.princess-wave { transform-box: view-box; transform-origin: 138px 128px; animation: princess-wave 1s ease-in-out infinite alternate; }
 @keyframes princess-appear { from { opacity: 0; } to { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { .boat-rock, .boat-oar, .boat-ripples, .princess { animation: none; } }
-@media (orientation: portrait) { .landscape { object-position: 24% center; } .princess { left: 78%; width: min(26vw, 150px); } }
+@keyframes princess-walk {
+  from { transform: translateX(calc(-50% - var(--walk-distance))); }
+  to { transform: translateX(calc(-50% + var(--walk-distance))); }
+}
+@keyframes princess-wave { from { transform: rotate(-13deg); } to { transform: rotate(14deg); } }
+@media (prefers-reduced-motion: reduce) { .boat-rock, .boat-oar, .boat-ripples, .princess, .princess-wave { animation: none; } }
+@media (orientation: portrait) { .landscape { object-position: 24% center; } .princess { --walk-distance: min(6vw, 55px); left: 78%; width: min(26vw, 150px); } }
 @media (max-width: 600px) { .camera-controls { top: 16px; right: 16px; width: 205px; padding: 12px; } .caption { bottom: 56px; } }
