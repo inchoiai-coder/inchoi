@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="핀란드의 호수와 숲 풍경으로 시작하는 인터랙티브 콘텐츠.">
+    <title>핀란드의 호수와 숲</title>
+    <link rel="stylesheet" href="/style.css">
+    <script src="/script.js" defer></script>
+    <script type="module" src="/prince.js"></script>
+  </head>
+  <body>
+    <main class="scene" aria-labelledby="scene-title">
+      <img class="landscape" src="/assets/finland-lake.png" alt="잔잔한 호수에 울창한 숲이 비치고 옅은 아침 안개가 떠 있는 핀란드 풍경" fetchpriority="high">
+      <canvas id="magic" aria-hidden="true"></canvas>
+      <section class="camera-controls" aria-label="내 얼굴 설정">
+        <button id="camera-toggle" type="button" aria-pressed="false">내 얼굴 켜기</button>
+        <p id="camera-status" role="status">카메라를 켜면 얼굴을 찾아 왕자님에게 맞춰 줘요.</p>
+        <div id="camera-preview" class="camera-preview" hidden>
+          <video id="preview-video" autoplay muted playsinline aria-label="얼굴 위치 확인용 웹캠 영상"></video>
+          <span>얼굴을 자동으로 따라가요</span>
+        </div>
+      </section>
+      <section id="prince" class="prince" aria-label="배를 타고 호수를 오가는 왕자님" hidden>
+        <div class="boat-rock">
+        <div class="prince-aura" aria-hidden="true"></div>
+        <div class="prince-rider">
+        <svg class="prince-body" viewBox="0 0 240 360" aria-hidden="true">
+          <defs>
+            <linearGradient id="royal-blue" x2="1" y2="1">
+              <stop stop-color="#316c76"/><stop offset="1" stop-color="#143c51"/>
+            </linearGradient>
+            <linearGradient id="royal-gold" x2="1" y2="1">
+              <stop stop-color="#fff3bf"/><stop offset=".5" stop-color="#edc56c"/><stop offset="1" stop-color="#b88a39"/>
+            </linearGradient>
+          </defs>
+          <ellipse cx="120" cy="345" rx="66" ry="9" fill="#132b28" opacity=".3"/>
+          <path d="M80 133 Q51 158 39 300 Q120 330 201 300 Q189 158 160 133Z" fill="#663c70" stroke="#e9c477" stroke-width="3"/>
+          <path d="M84 215 L82 306 L104 310 L123 231 L137 310 L159 306 L154 215Z" fill="#e8e3d6"/>
+          <path d="M80 294 L106 296 L103 330 Q84 342 69 332 L73 323Z M135 296 L160 294 L167 323 Q180 336 157 337 L139 330Z" fill="#203745" stroke="#e0bb70" stroke-width="3"/>
+          <path d="M85 135 Q120 122 155 135 L163 229 Q120 245 77 229Z" fill="url(#royal-blue)" stroke="#ebcd83" stroke-width="2"/>
+          <path d="M84 137 Q69 132 60 157 L48 214 L62 222 L88 164 M155 137 Q171 132 180 157 L192 214 L178 222 L153 164" fill="url(#royal-blue)" stroke="#e6c47a" stroke-width="2"/>
+          <ellipse cx="53" cy="220" rx="8" ry="11" fill="#f5d4b4"/><ellipse cx="187" cy="220" rx="8" ry="11" fill="#f5d4b4"/>
+          <path d="M105 118 L105 140 L120 153 L135 140 L135 118" fill="#f5d4b4"/>
+          <path d="M90 134 L104 128 L120 151 L102 158Z M150 134 L136 128 L120 151 L138 158Z" fill="#fff5df"/>
+          <path d="M120 153 L120 217 M81 215 L158 215" stroke="#ebcd83" stroke-width="5"/>
+          <rect x="110" y="207" width="20" height="16" rx="3" fill="url(#royal-gold)"/>
+          <circle cx="120" cy="173" r="3" fill="#ffe7a3"/><circle cx="120" cy="189" r="3" fill="#ffe7a3"/>
+          <path d="M84 145 L103 163 L120 154 L137 163 L156 145" fill="none" stroke="#e6c47a" stroke-width="3"/>
+          <ellipse cx="84" cy="142" rx="15" ry="6" fill="url(#royal-gold)"/><ellipse cx="156" cy="142" rx="15" ry="6" fill="url(#royal-gold)"/>
+          <ellipse cx="120" cy="85" rx="45" ry="53" fill="#543b32"/>
+          <ellipse cx="120" cy="87" rx="36" ry="43" fill="#f5d4b4"/>
+          <path d="M82 73 Q84 32 124 39 Q154 34 160 69 Q135 65 123 51 Q112 68 82 73" fill="#543b32"/>
+          <path d="M103 86 L109 86 M131 86 L137 86" stroke="#513931" stroke-width="3" stroke-linecap="round"/>
+          <path d="M109 104 Q120 114 132 104" fill="none" stroke="#a15f57" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        <div class="prince-face"><canvas id="face-canvas" width="192" height="224" role="img" aria-label="자동으로 맞춰지는 내 웹캠 얼굴" hidden></canvas></div>
+        <svg class="prince-crown" viewBox="0 0 240 360" aria-hidden="true">
+          <path d="M77 47 L70 15 L96 30 L120 4 L144 30 L170 15 L163 47Z" fill="#edc56c" stroke="#fff1bc" stroke-width="2"/>
+          <path d="M79 44 L161 44 L158 56 L82 56Z" fill="#d4a54d" stroke="#fff1bc" stroke-width="2"/>
+          <path d="M120 21 L127 32 L120 42 L113 32Z" fill="#79d7c7"/>
+          <circle cx="91" cy="39" r="3" fill="#fff1bc"/><circle cx="149" cy="39" r="3" fill="#fff1bc"/>
+        </svg>
+        </div>
+        <svg class="prince-boat" viewBox="0 0 360 160" aria-hidden="true">
+          <defs>
+            <linearGradient id="boat-wood" x2="0" y2="1">
+              <stop stop-color="#b77743"/><stop offset="1" stop-color="#663a2e"/>
+            </linearGradient>
+          </defs>
+          <g class="boat-ripples" fill="none" stroke="#dcf6ed" stroke-linecap="round">
+            <ellipse cx="181" cy="137" rx="146" ry="12" stroke-width="2" opacity=".5"/>
+            <path d="M20 128 Q7 135 26 142 M335 126 Q354 133 340 142 M65 151 Q180 166 302 149" opacity=".35"/>
+          </g>
+          <path d="M29 64 Q150 92 341 49 L308 112 Q187 153 70 120Z" fill="url(#boat-wood)" stroke="#e8bb76" stroke-width="2"/>
+          <path d="M29 64 Q154 84 341 49 Q277 108 70 120Z" fill="#643e2d"/>
+          <path d="M58 76 Q180 104 321 62 L302 86 Q181 119 73 97Z" fill="#ad7848"/>
+          <path d="M102 82 L104 101 M231 83 L230 102" stroke="#efc38a" stroke-width="12"/>
+          <path d="M29 64 Q173 114 341 49 L308 112 Q187 153 70 120Z" fill="url(#boat-wood)" stroke="#e8bb76" stroke-width="2"/>
+          <path d="M48 84 Q181 125 328 72 M62 102 Q188 139 317 94" fill="none" stroke="#e7ac6a" stroke-width="1.5" opacity=".55"/>
+          <path d="M29 64 Q173 114 341 49" fill="none" stroke="#ffe2a5" stroke-width="5" stroke-linecap="round"/>
+          <g class="boat-oar">
+            <path d="M220 24 L301 113" fill="none" stroke="#f0d09a" stroke-width="6" stroke-linecap="round"/>
+            <path d="M286 98 Q296 95 309 110 L326 132 Q326 141 314 138 L292 117 Q283 107 286 98" fill="#d8a76d" stroke="#ffe3b0" stroke-width="2"/>
+          </g>
+        </svg>
+        </div>
+        <p class="prince-label">호수 위의 왕자님</p>
+        <button id="prince-close" class="prince-close" type="button" aria-label="왕자님 숨기기">×</button>
+      </section>
+      <div class="caption">
+        <p class="eyebrow" lang="en">FINLAND</p>
+        <h1 id="scene-title">호수와 숲</h1>
+        <p class="hint">마우스를 움직여 숲의 요정들을 만나보세요.</p>
+        <p id="gesture-status" class="hint gesture-hint" role="status">큰 원을 그리면 왕자님이 배를 타고 나타나요.</p>
+      </div>
+      <p class="image-note">AI로 만든 핀란드 풍경</p>
+    </main>
+  </body>
+</html>

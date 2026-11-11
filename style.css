@@ -1,0 +1,73 @@
+:root {
+  color-scheme: dark;
+  font-family: "Malgun Gothic", "맑은 고딕", sans-serif;
+  background: #172a26;
+  color: #fff;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; }
+
+.scene {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100svh;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.landscape {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 58% center;
+  z-index: -2;
+}
+
+.scene::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(transparent 55%, rgb(7 21 18 / 65%));
+  z-index: -1;
+}
+
+#magic { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+.caption { position: absolute; bottom: clamp(48px, 7vw, 100px); left: clamp(24px, 6vw, 96px); z-index: 2; pointer-events: none; }
+.eyebrow { margin: 0 0 14px; font-size: 12px; letter-spacing: .35em; }
+h1 { margin: 0; font-size: clamp(36px, 5vw, 68px); font-weight: 400; letter-spacing: -.04em; line-height: 1.25; }
+.hint { margin: 18px 0 0; font-size: clamp(12px, 1.4vw, 15px); color: #e6eee9; }
+.image-note { position: absolute; bottom: 18px; right: 24px; margin: 0; font-size: 11px; color: #e6eee9; text-shadow: 0 1px 4px #14241c; z-index: 2; pointer-events: none; }
+
+[hidden] { display: none !important; }
+.gesture-hint { margin-top: 8px; color: #ffe7ad; }
+.camera-controls { position: absolute; top: 24px; right: 24px; width: min(250px, calc(100% - 48px)); z-index: 4; padding: 16px; border: 1px solid #ffffff38; border-radius: 18px; background: #102d2bd9; box-shadow: 0 8px 36px #0c241b26; }
+button { font: inherit; cursor: pointer; }
+#camera-toggle { width: 100%; padding: 11px 16px; border: 1px solid #f9dfa1; border-radius: 24px; background: #f9dfa1; color: #20382f; font-size: 14px; font-weight: 700; }
+#camera-toggle[aria-pressed="true"] { background: transparent; color: #f9dfa1; }
+#camera-toggle:disabled { opacity: .65; cursor: wait; }
+button:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
+#camera-status { margin: 12px 0 0; font-size: 12px; line-height: 1.7; color: #f0f3e8; }
+.camera-preview { position: relative; width: 160px; height: 120px; margin: 14px auto 24px; border: 1px solid #f9dfa1; border-radius: 12px; }
+.camera-preview video { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; transform: scaleX(-1); }
+.camera-preview span { position: absolute; bottom: -23px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 10px; color: #f9dfa1; }
+.prince { --prince-width: min(360px, 78vw, 65svh); position: absolute; width: var(--prince-width); height: calc(var(--prince-width) * .833333); z-index: 3; pointer-events: none; }
+.boat-rock { position: absolute; inset: 0; transform-origin: 50% 88%; animation: boat-bob 3.2s ease-in-out infinite; }
+.prince-rider { position: absolute; left: 25%; top: 0; width: 50%; height: 90%; }
+.prince-boat { position: absolute; bottom: 0; left: 0; width: 100%; height: auto; }
+.boat-oar { transform-origin: 240px 48px; animation: boat-row 2.6s ease-in-out infinite; }
+.boat-ripples { animation: boat-ripples 3.2s ease-in-out infinite; }
+@keyframes boat-bob { 0%, 100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(5px) rotate(1deg); } }
+@keyframes boat-row { 0%, 100% { transform: rotate(-8deg); } 50% { transform: rotate(9deg); } }
+@keyframes boat-ripples { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+.prince-body, .prince-crown { position: absolute; inset: 0; width: 100%; height: 100%; }
+.prince-aura { position: absolute; inset: 2% -35% -5%; border-radius: 50%; background: radial-gradient(ellipse, #ffeac65c, #deedb826 45%, transparent 70%); }
+.prince-face { position: absolute; left: 34.8%; top: 12.4%; width: 30.4%; height: 24.2%; border-radius: 48% 48% 45% 45%; overflow: hidden; }
+.prince-face canvas { width: 100%; height: 100%; transform: scaleX(-1); }
+.prince-label { position: absolute; bottom: -18px; width: 100%; margin: 0; text-align: center; font-size: 13px; letter-spacing: .12em; color: #fff1c9; text-shadow: 0 1px 6px #12382c; }
+.prince-close { position: absolute; top: 8px; right: 18%; width: 28px; height: 28px; border: 1px solid #fff6; border-radius: 50%; background: #17372ac9; color: #fff4ce; font-size: 22px; line-height: 1; pointer-events: auto; }
+@media (prefers-reduced-motion: reduce) { .boat-rock, .boat-oar, .boat-ripples { animation: none; } }
+@media (max-width: 600px) { .camera-controls { top: 16px; right: 16px; width: 205px; padding: 12px; } .caption { bottom: 56px; } }

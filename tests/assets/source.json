@@ -1,0 +1,4 @@
+{
+  "portrait": "https://storage.googleapis.com/mediapipe-assets/portrait.jpg",
+  "purpose": "Official MediaPipe example photo for local face detection tests; not a webcam capture."
+}

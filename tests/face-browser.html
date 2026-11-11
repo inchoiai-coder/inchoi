@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>얼굴 자동 맞춤 점검 — 공식 예제 사진</title>
+<link rel="stylesheet" href="/style.css">
+<style>
+body { padding: 32px; background: #18322b; }
+h1 { font-size: 24px; margin-bottom: 12px; }
+.test-layout { display: flex; flex-wrap: wrap; align-items: center; gap: 40px; margin: 24px 0; }
+#source { width: min(640px, 85vw); height: auto; border-radius: 16px; }
+#test-prince { position: relative; width: 260px; height: 380px; }
+#test-prince .prince { display: block; left: 20px; top: 10px; }
+#test-video { position: fixed; left: -10000px; width: 640px; height: 480px; }
+.prince-close { display: none; }
+#results { white-space: pre-wrap; line-height: 1.7; }
+</style>
+<h1>얼굴 자동 맞춤 점검</h1>
+<p>Google 공식 예제 사진으로 검사합니다. 실제 웹캠을 사용하지 않습니다.</p>
+<div class="test-layout"><canvas id="source" width="640" height="480"></canvas><div id="test-prince"></div></div>
+<video id="test-video" autoplay muted playsinline></video>
+<p id="results" role="status">얼굴 인식을 준비하고 있습니다.</p>
+<script type="module" src="/tests/face-browser.js"></script>
+</html>
