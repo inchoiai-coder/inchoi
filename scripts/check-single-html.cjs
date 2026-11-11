@@ -16,6 +16,10 @@ const test = String.raw`
   document.body.append(report);
   const checks = [];
   const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
+  async function waitForFace(condition) {
+    for (let i = 0; i < 40 && !condition(); i++) await pause(100);
+    return condition();
+  }
   function check(name, pass) {
     checks.push((pass ? 'PASS' : 'FAIL') + ' · ' + name);
     report.textContent = '단일 HTML 점검 · 예제 사진\n' + checks.join('\n');
@@ -27,6 +31,10 @@ const test = String.raw`
     await document.querySelector('.landscape').decode();
     check('파일에 포함된 풍경 이미지', true);
     const scene = document.querySelector('.scene');
+    const intro = document.querySelector('#intro');
+    if (!intro.hidden) document.querySelector('#intro-skip').click();
+    await Promise.all(intro.getAnimations().map(animation => animation.finished));
+    check('인트로를 건너뛰면 장면을 조작할 수 있음', intro.hidden && !scene.inert);
     const bounds = scene.getBoundingClientRect();
     async function drawCircle() {
       for (let i = 0; i <= 80; i++) {
@@ -96,7 +104,7 @@ const test = String.raw`
     ]) {
       pose = next;
       await pause(1400);
-      check(name, face.hidden === !pose.visible);
+      check(name, await waitForFace(() => face.hidden === !pose.visible));
     }
     function colorDifference(canvas) {
       const pixels = canvas.getContext('2d').getImageData(80, 96, 32, 32).data;
@@ -109,14 +117,11 @@ const test = String.raw`
     check('두 번째 얼굴을 공주님에게 표시', !face.hidden && !princessFace.hidden && princessFace.getBoundingClientRect().width > 0);
     check('왕자님과 공주님이 서로 다른 영상을 표시', colorDifference(face) > 12 && colorDifference(princessFace) < 2);
     pose.visible = false;
-    await pause(1400);
-    check('첫 사람이 나가도 공주님 얼굴 유지', face.hidden && !princessFace.hidden && colorDifference(princessFace) < 2);
+    check('첫 사람이 나가도 공주님 얼굴 유지', await waitForFace(() => face.hidden && !princessFace.hidden && colorDifference(princessFace) < 2));
     pose.visible = true;
-    await pause(1400);
-    check('첫 사람이 돌아오면 왕자님 얼굴 복귀', !face.hidden && !princessFace.hidden && colorDifference(face) > 12);
+    check('첫 사람이 돌아오면 왕자님 얼굴 복귀', await waitForFace(() => !face.hidden && !princessFace.hidden && colorDifference(face) > 12));
     secondPose.visible = false;
-    await pause(1400);
-    check('두 번째 사람이 나가면 공주님 원래 얼굴 복귀', !face.hidden && princessFace.hidden);
+    check('두 번째 사람이 나가면 공주님 원래 얼굴 복귀', await waitForFace(() => !face.hidden && princessFace.hidden));
     button.click();
     check('카메라 끄기와 영상 해제', face.hidden && princessFace.hidden && media.getTracks().every(track => track.readyState === 'ended'));
     report.dataset.result = 'pass';

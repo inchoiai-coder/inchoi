@@ -13,6 +13,53 @@ let animation = 0;
 let width = 0;
 let height = 0;
 
+function playIntro() {
+  const intro = document.querySelector('#intro');
+  const video = document.querySelector('#intro-video');
+  const skip = document.querySelector('#intro-skip');
+  let waitTimer;
+  let leaving = false;
+
+  function finishIntro() {
+    if (leaving) return;
+    leaving = true;
+    clearTimeout(waitTimer);
+    video.pause();
+    const fade = intro.animate([{ opacity: 1 }, { opacity: 0 }], {
+      duration: 550,
+      easing: 'ease-in-out',
+      fill: 'forwards',
+    });
+    function revealScene() {
+      const moveFocus = document.activeElement === skip;
+      intro.hidden = true;
+      scene.inert = false;
+      video.removeAttribute('src');
+      video.load();
+      if (moveFocus) document.querySelector('#scene-title').focus({ preventScroll: true });
+    }
+    fade.finished.then(revealScene, revealScene);
+  }
+
+  function waitForPlayback() {
+    if (leaving) return;
+    clearTimeout(waitTimer);
+    waitTimer = setTimeout(finishIntro, 8000);
+  }
+
+  skip.addEventListener('click', finishIntro);
+  video.addEventListener('ended', finishIntro, { once: true });
+  video.addEventListener('error', finishIntro, { once: true });
+  video.addEventListener('waiting', waitForPlayback);
+  video.addEventListener('playing', () => clearTimeout(waitTimer));
+  scene.inert = true;
+  intro.hidden = false;
+  waitForPlayback();
+  video.play().catch(finishIntro);
+}
+
+if (!reducedMotion) playIntro();
+
 function resize() {
   const bounds = scene.getBoundingClientRect();
   width = bounds.width;

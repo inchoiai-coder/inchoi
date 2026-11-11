@@ -59,7 +59,9 @@ html = replaceOnce(html, '    <script src="./script.js" defer></script>\n', '');
 html = replaceOnce(html, '    <script type="module" src="./prince.js"></script>\n', '');
 const image = fs.readFileSync(path.join(root, 'assets/finland-lake.png')).toString('base64');
 html = replaceOnce(html, 'src="./assets/finland-lake.png"', `src="data:image/png;base64,${image}"`);
-const policy = "default-src 'none'; script-src 'unsafe-inline' 'wasm-unsafe-eval' blob:; style-src 'unsafe-inline'; img-src data: blob:; media-src blob:; connect-src blob: data:; worker-src blob:; object-src 'none'";
+const intro = fs.readFileSync(path.join(root, 'assets/lake-intro.mp4')).toString('base64');
+html = replaceOnce(html, 'src="./assets/lake-intro.mp4"', `src="data:video/mp4;base64,${intro}"`);
+const policy = "default-src 'none'; script-src 'unsafe-inline' 'wasm-unsafe-eval' blob:; style-src 'unsafe-inline'; img-src data: blob:; media-src data: blob:; connect-src blob: data:; worker-src blob:; object-src 'none'";
 html = replaceOnce(html, '<meta charset="utf-8">', `<meta charset="utf-8">\n    <meta http-equiv="Content-Security-Policy" content="${policy}">`);
 const notice = JSON.stringify({
   library: '@mediapipe/tasks-vision 0.10.21',
@@ -67,9 +69,9 @@ const notice = JSON.stringify({
   license: read('vendor/mediapipe/LICENSE'),
 }).replace(/</g, '\\u003c');
 html = replaceOnce(html, '  </body>', `${blobs}\n<script type="application/json" id="third-party-notices">${notice}</script>\n${inlineScript(effectsCode)}\n${inlineScript(princeCode)}\n  </body>`);
-if (/<(?:script|img)\b[^>]*\bsrc=["'](?!data:)/i.test(html) || /<link\b/i.test(html)) {
+if (/<(?:script|img|video)\b[^>]*\bsrc=["'](?!data:)/i.test(html) || /<link\b/i.test(html)) {
   throw new Error('An external page asset remains');
 }
 const output = path.join(root, '호수의_왕자님.html');
 fs.writeFileSync(output, html, 'utf8');
-console.log(JSON.stringify({ output, bytes: Buffer.byteLength(html), embeddedAssets: Object.keys(assets).length + 1, externalFiles: 0 }));
+console.log(JSON.stringify({ output, bytes: Buffer.byteLength(html), embeddedAssets: Object.keys(assets).length + 2, externalFiles: 0 }));

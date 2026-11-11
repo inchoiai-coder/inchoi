@@ -10,6 +10,10 @@
     <script type="module" src="./prince.js"></script>
   </head>
   <body>
+    <section id="intro" class="intro" aria-label="호수와 숲 인트로" hidden>
+      <video id="intro-video" src="./assets/lake-intro.mp4" muted playsinline preload="none" aria-hidden="true"></video>
+      <button id="intro-skip" type="button">인트로 건너뛰기</button>
+    </section>
     <main class="scene" aria-labelledby="scene-title">
       <img class="landscape" src="./assets/finland-lake.png" alt="잔잔한 호수에 울창한 숲이 비치고 옅은 아침 안개가 떠 있는 핀란드 풍경" fetchpriority="high">
       <canvas id="magic" aria-hidden="true"></canvas>
@@ -121,7 +125,7 @@
       </div>
       <div class="caption">
         <p class="eyebrow" lang="en">FINLAND</p>
-        <h1 id="scene-title">호수와 숲</h1>
+        <h1 id="scene-title" tabindex="-1">호수와 숲</h1>
         <p class="hint">마우스를 움직여 숲의 요정들을 만나보세요.</p>
         <p id="gesture-status" class="hint gesture-hint" role="status">큰 원을 그리면 왕자님이 배를 타고 나타나요.</p>
       </div>

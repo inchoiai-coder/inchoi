@@ -19,6 +19,7 @@ const files = new Map([
   ['/vendor/mediapipe/wasm/vision_wasm_nosimd_internal.wasm', ['vendor/mediapipe/wasm/vision_wasm_nosimd_internal.wasm', 'application/wasm']],
   ['/vendor/mediapipe/face_landmarker.task', ['vendor/mediapipe/face_landmarker.task', 'application/octet-stream']],
   ['/assets/finland-lake.png', ['assets/finland-lake.png', 'image/png']],
+  ['/assets/lake-intro.mp4', ['assets/lake-intro.mp4', 'video/mp4']],
 ]);
 if (qa) {
   files.set('/tests/face-browser.html', ['tests/face-browser.html', 'text/html; charset=utf-8']);
