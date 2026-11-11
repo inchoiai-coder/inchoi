@@ -40,25 +40,25 @@ function embeddedUrl(name, type) {
 `;
 let tracker = stripModule(read('face-tracker.js'));
 tracker = replaceOnce(tracker, "await import('./vendor/mediapipe/vision_bundle.mjs')", "await import(embeddedUrl('vision-module', 'text/javascript'))");
-tracker = replaceOnce(tracker, "const fileset = await FilesetResolver.forVisionTasks('/vendor/mediapipe/wasm');", `const simd = await FilesetResolver.isSimdSupported();
+tracker = replaceOnce(tracker, "const fileset = await FilesetResolver.forVisionTasks(new URL('./vendor/mediapipe/wasm', import.meta.url).href);", `const simd = await FilesetResolver.isSimdSupported();
   const fileset = {
     wasmLoaderPath: embeddedUrl(simd ? 'loader-simd' : 'loader-nosimd', 'text/javascript'),
     wasmBinaryPath: embeddedUrl(simd ? 'wasm-simd' : 'wasm-nosimd', 'application/wasm'),
   };`);
-tracker = replaceOnce(tracker, "modelAssetPath: '/vendor/mediapipe/face_landmarker.task'", "modelAssetBuffer: embeddedBytes('face-model')");
+tracker = replaceOnce(tracker, "modelAssetPath: new URL('./vendor/mediapipe/face_landmarker.task', import.meta.url).href", "modelAssetBuffer: embeddedBytes('face-model')");
 let prince = stripModule(read('prince.js'));
-prince = prince.replace('Chrome에서 PC 내부 주소로 열어 주세요.', '이 HTML 파일을 Chrome에서 다시 열어 주세요.');
+prince = prince.replace('Chrome에서 https로 시작하는 주소로 열어 주세요.', '이 HTML 파일을 Chrome에서 다시 열어 주세요.');
 const effectsCode = `(() => {\n${read('script.js')}\n})();`;
 const princeCode = `(() => {\n${helpers}\n${stripModule(read('circle.mjs'))}\n${stripModule(read('face-mapping.mjs'))}\n${tracker}\n${prince}\n})();`;
 new vm.Script(effectsCode);
 new vm.Script(princeCode);
 
 let html = read('index.html');
-html = replaceOnce(html, '<link rel="stylesheet" href="/style.css">', `<style>\n${read('style.css')}\n</style>`);
-html = replaceOnce(html, '    <script src="/script.js" defer></script>\n', '');
-html = replaceOnce(html, '    <script type="module" src="/prince.js"></script>\n', '');
+html = replaceOnce(html, '<link rel="stylesheet" href="./style.css">', `<style>\n${read('style.css')}\n</style>`);
+html = replaceOnce(html, '    <script src="./script.js" defer></script>\n', '');
+html = replaceOnce(html, '    <script type="module" src="./prince.js"></script>\n', '');
 const image = fs.readFileSync(path.join(root, 'assets/finland-lake.png')).toString('base64');
-html = replaceOnce(html, 'src="/assets/finland-lake.png"', `src="data:image/png;base64,${image}"`);
+html = replaceOnce(html, 'src="./assets/finland-lake.png"', `src="data:image/png;base64,${image}"`);
 const policy = "default-src 'none'; script-src 'unsafe-inline' 'wasm-unsafe-eval' blob:; style-src 'unsafe-inline'; img-src data: blob:; media-src blob:; connect-src blob: data:; worker-src blob:; object-src 'none'";
 html = replaceOnce(html, '<meta charset="utf-8">', `<meta charset="utf-8">\n    <meta http-equiv="Content-Security-Policy" content="${policy}">`);
 const notice = JSON.stringify({

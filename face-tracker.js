@@ -2,9 +2,9 @@ import { createFaceMapping, drawMappedFace } from './face-mapping.mjs';
 
 export async function createFaceTracker(video, canvas, onStatus) {
   const { FilesetResolver, FaceLandmarker } = await import('./vendor/mediapipe/vision_bundle.mjs');
-  const fileset = await FilesetResolver.forVisionTasks('/vendor/mediapipe/wasm');
+  const fileset = await FilesetResolver.forVisionTasks(new URL('./vendor/mediapipe/wasm', import.meta.url).href);
   const detector = await FaceLandmarker.createFromOptions(fileset, {
-    baseOptions: { modelAssetPath: '/vendor/mediapipe/face_landmarker.task', delegate: 'CPU' },
+    baseOptions: { modelAssetPath: new URL('./vendor/mediapipe/face_landmarker.task', import.meta.url).href, delegate: 'CPU' },
     runningMode: 'VIDEO', numFaces: 1,
     minFaceDetectionConfidence: 0.6, minFacePresenceConfidence: 0.6,
     minTrackingConfidence: 0.6,

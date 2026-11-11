@@ -85,7 +85,7 @@ function stopCamera(message = '카메라를 껐어요. 왕자님은 원래 얼�
 cameraButton.addEventListener('click', async () => {
   if (stream) { stopCamera(); return; }
   if (!navigator.mediaDevices?.getUserMedia) {
-    cameraStatus.textContent = '카메라를 사용할 수 없어요. Chrome에서 PC 내부 주소로 열어 주세요.';
+    cameraStatus.textContent = '카메라를 사용할 수 없어요. Chrome에서 https로 시작하는 주소로 열어 주세요.';
     return;
   }
   cameraButton.disabled = true;

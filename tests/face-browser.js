@@ -1,4 +1,4 @@
-import { createFaceTracker } from '/face-tracker.js';
+import { createFaceTracker } from '../face-tracker.js';
 
 const results = document.querySelector('#results');
 const source = document.querySelector('#source');
@@ -12,13 +12,13 @@ let pose = { x: 0, scale: 1, angle: 0, visible: true };
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 try {
-  const page = new DOMParser().parseFromString(await (await fetch('/')).text(), 'text/html');
+  const page = new DOMParser().parseFromString(await (await fetch('../')).text(), 'text/html');
   const prince = page.querySelector('#prince');
   prince.hidden = false;
   document.querySelector('#test-prince').append(prince);
   const output = prince.querySelector('#face-canvas');
   const image = new Image();
-  image.src = '/tests/assets/portrait.jpg';
+  image.src = './assets/portrait.jpg';
   await image.decode();
   function draw() {
     ctx.fillStyle = '#e4e7e2';
