@@ -50,13 +50,28 @@ const test = String.raw`
     const image = new Image();
     image.src = 'data:image/jpeg;base64,${photo}';
     await image.decode();
+    const grayscale = document.createElement('canvas');
+    grayscale.width = 400;
+    grayscale.height = 430;
+    const grayContext = grayscale.getContext('2d');
+    grayContext.filter = 'grayscale(1)';
+    grayContext.drawImage(image, 210, 0, 400, 430, 0, 0, 400, 430);
     let pose = { x: 0, scale: 1, angle: 0, visible: true };
+    let secondPose;
     function draw() {
       context.fillStyle = '#e4e7e2'; context.fillRect(0, 0, 640, 480);
-      if (pose.visible) {
-        context.save(); context.translate(320 + pose.x, 240); context.rotate(pose.angle);
-        const scale = 470 / image.height * pose.scale;
-        context.drawImage(image, -image.width * scale / 2, -image.height * scale / 2, image.width * scale, image.height * scale);
+      for (const person of [pose, secondPose]) {
+        if (!person?.visible) continue;
+        context.save();
+        context.translate(320 + person.x, 240);
+        context.rotate(person.angle);
+        if (secondPose) {
+          if (person === secondPose) context.drawImage(grayscale, -112, -230, 224, 241);
+          else context.drawImage(image, 210, 0, 400, 430, -112, -230, 224, 241);
+        } else {
+          const scale = 470 / image.height * person.scale;
+          context.drawImage(image, -image.width * scale / 2, -image.height * scale / 2, image.width * scale, image.height * scale);
+        }
         context.restore();
       }
       raf = requestAnimationFrame(draw);
@@ -70,8 +85,10 @@ const test = String.raw`
     const button = document.querySelector('#camera-toggle');
     button.click();
     const face = document.querySelector('#face-canvas');
+    const princessFace = document.querySelector('#princess-face-canvas');
     for (let i = 0; i < 250 && face.hidden; i++) await pause(100);
     check('파일에 포함된 얼굴 인식 기능 실행', !face.hidden && requests === 1);
+    check('한 얼굴은 왕자님에게만 표시', princessFace.hidden);
     for (const [name, next] of [
       ['얼굴 이동과 기울기 자동 맞춤', { x: 100, scale: 1.15, angle: 0.2, visible: true }],
       ['얼굴을 놓치면 숨김', { x: 0, scale: 1, angle: 0, visible: false }],
@@ -81,8 +98,27 @@ const test = String.raw`
       await pause(1400);
       check(name, face.hidden === !pose.visible);
     }
+    function colorDifference(canvas) {
+      const pixels = canvas.getContext('2d').getImageData(80, 96, 32, 32).data;
+      let difference = 0;
+      for (let i = 0; i < pixels.length; i += 4) difference += Math.abs(pixels[i] - pixels[i + 2]);
+      return difference / (pixels.length / 4);
+    }
+    secondPose = { x: 150, angle: 0, visible: true };
+    for (let i = 0; i < 50 && princessFace.hidden; i++) await pause(100);
+    check('두 번째 얼굴을 공주님에게 표시', !face.hidden && !princessFace.hidden && princessFace.getBoundingClientRect().width > 0);
+    check('왕자님과 공주님이 서로 다른 영상을 표시', colorDifference(face) > 12 && colorDifference(princessFace) < 2);
+    pose.visible = false;
+    await pause(1400);
+    check('첫 사람이 나가도 공주님 얼굴 유지', face.hidden && !princessFace.hidden && colorDifference(princessFace) < 2);
+    pose.visible = true;
+    await pause(1400);
+    check('첫 사람이 돌아오면 왕자님 얼굴 복귀', !face.hidden && !princessFace.hidden && colorDifference(face) > 12);
+    secondPose.visible = false;
+    await pause(1400);
+    check('두 번째 사람이 나가면 공주님 원래 얼굴 복귀', !face.hidden && princessFace.hidden);
     button.click();
-    check('카메라 끄기와 영상 해제', face.hidden && media.getTracks().every(track => track.readyState === 'ended'));
+    check('카메라 끄기와 영상 해제', face.hidden && princessFace.hidden && media.getTracks().every(track => track.readyState === 'ended'));
     report.dataset.result = 'pass';
     report.textContent += '\n완료: 별도 파일 없이 단일 HTML만으로 점검 통과';
   } catch (error) {

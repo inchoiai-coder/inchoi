@@ -15,7 +15,7 @@
       <canvas id="magic" aria-hidden="true"></canvas>
       <section class="camera-controls" aria-label="내 얼굴 설정">
         <button id="camera-toggle" type="button" aria-pressed="false">내 얼굴 켜기</button>
-        <p id="camera-status" role="status">카메라를 켜면 얼굴을 찾아 왕자님에게 맞춰 줘요.</p>
+        <p id="camera-status" role="status">카메라에 먼저 들어온 얼굴은 왕자님, 두 번째 얼굴은 공주님에게 맞춰 줘요.</p>
         <div id="camera-preview" class="camera-preview" hidden>
           <video id="preview-video" autoplay muted playsinline aria-label="얼굴 위치 확인용 웹캠 영상"></video>
           <span>얼굴을 자동으로 따라가요</span>
@@ -106,9 +106,12 @@
         <path d="M68 140 Q90 150 113 140" fill="none" stroke="#f1cf92" stroke-width="4"/>
         <circle cx="90" cy="145" r="4" fill="#9de1ca"/>
         <ellipse cx="90" cy="64" rx="28" ry="35" fill="#f6d4bb"/>
-        <path d="M61 62 Q57 30 88 28 Q120 27 121 62 Q105 54 95 39 Q83 54 61 62Z" fill="#51342d"/>
         <path d="M77 65 L81 65 M99 65 L103 65" stroke="#55352d" stroke-width="2.4" stroke-linecap="round"/>
         <path d="M83 81 Q90 87 97 81" fill="none" stroke="#a45363" stroke-width="2" stroke-linecap="round"/>
+        <foreignObject x="62" y="29" width="56" height="70" aria-hidden="true">
+          <canvas id="princess-face-canvas" width="192" height="224" hidden></canvas>
+        </foreignObject>
+        <path d="M61 62 Q57 30 88 28 Q120 27 121 62 Q105 54 95 39 Q83 54 61 62Z" fill="#51342d"/>
         <circle cx="63" cy="78" r="3" fill="#f3cf80"/><circle cx="117" cy="78" r="3" fill="#f3cf80"/>
         <path d="M68 34 L63 15 L78 23 L90 8 L102 23 L117 15 L112 34 Q90 29 68 34Z" fill="#edc56c" stroke="#fff0bf" stroke-width="2"/>
         <path d="M90 18 L95 24 L90 29 L85 24Z" fill="#a34d7e"/>

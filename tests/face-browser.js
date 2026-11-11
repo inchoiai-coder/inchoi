@@ -37,7 +37,7 @@ try {
   media = source.captureStream(30);
   video.srcObject = media;
   await video.play();
-  tracker = await createFaceTracker(video, output, value => { status = value; });
+  tracker = await createFaceTracker(video, [output], value => { status = value; });
   tracker.start();
   const stages = [
     ['정면 얼굴 인식', { x: 0, scale: 1, angle: 0, visible: true }, true],

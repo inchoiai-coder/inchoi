@@ -10,6 +10,7 @@ const cameraStatus = document.querySelector('#camera-status');
 const preview = document.querySelector('#camera-preview');
 const previewVideo = document.querySelector('#preview-video');
 const faceCanvas = document.querySelector('#face-canvas');
+const princessFaceCanvas = document.querySelector('#princess-face-canvas');
 let trail = [];
 let lastPointTime = -Infinity;
 let stream = null;
@@ -70,7 +71,7 @@ document.querySelector('#prince-close').addEventListener('click', () => {
   gestureStatus.textContent = '큰 원을 그리면 왕자님이 다시 배를 타고 나타나요.';
 });
 
-function stopCamera(message = '카메라를 껐어요. 왕자님은 원래 얼굴로 돌아가요.') {
+function stopCamera(message = '카메라를 껐어요. 두 캐릭터가 원래 얼굴로 돌아가요.') {
   cameraSession++;
   faceTracker?.stop();
   faceTracker = null;
@@ -78,6 +79,7 @@ function stopCamera(message = '카메라를 껐어요. 왕자님은 원래 얼�
   stream = null;
   previewVideo.srcObject = null;
   faceCanvas.hidden = true;
+  princessFaceCanvas.hidden = true;
   preview.hidden = true;
   cameraButton.textContent = '내 얼굴 켜기';
   cameraButton.setAttribute('aria-pressed', 'false');
@@ -114,10 +116,12 @@ cameraButton.addEventListener('click', async () => {
     for (const track of stream.getVideoTracks()) {
       track.addEventListener('ended', () => { if (stream === acquired) stopCamera('카메라 연결이 끊겼어요. 연결한 뒤 다시 켜 주세요.'); }, { once: true });
     }
-    const tracker = await createFaceTracker(previewVideo, faceCanvas, status => {
+    const tracker = await createFaceTracker(previewVideo, [faceCanvas, princessFaceCanvas], status => {
       if (session !== cameraSession) return;
       const messages = {
-        tracking: '얼굴을 찾았어요! 움직여도 왕자님 얼굴에 맞춰 따라가요.',
+        tracking: '얼굴을 찾았어요! 한 사람이 더 들어오면 공주님 얼굴에 맞춰 줘요.',
+        trackingBoth: '두 얼굴을 찾았어요! 왕자님과 공주님 얼굴에 맞췄어요.',
+        trackingPrincess: '공주님 얼굴을 따라가고 있어요. 왕자님 얼굴을 다시 찾고 있어요.',
         searching: '얼굴을 찾고 있어요. 밝은 곳에서 카메라를 바라봐 주세요.',
         error: '얼굴 인식이 멈췄어요. 카메라를 껐다가 다시 켜 주세요.',
       };

@@ -23,7 +23,7 @@ export function createFaceMapping(landmarks, videoWidth, videoHeight, width, hei
   const rx = (maxX - minX) / 2, ry = (maxY - minY) / 2;
   if (rx < 8 || ry < 8) return null;
   const sourceCenter = { x: cx * ux - cy * uy, y: cx * uy + cy * ux };
-  // Stretch each face-outline section onto the prince's oval. The source
+  // Stretch each face-outline section onto the character's oval. The source
   // triangles contain facial pixels only, so the webcam background is excluded.
   const target = projected.map(point => {
     const angle = Math.atan2((point.y - cy) / ry, (point.x - cx) / rx);

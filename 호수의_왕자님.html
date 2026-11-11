@@ -75,7 +75,8 @@ button:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
 .prince-body, .prince-crown { position: absolute; inset: 0; width: 100%; height: 100%; }
 .prince-aura { position: absolute; inset: 2% -35% -5%; border-radius: 50%; background: radial-gradient(ellipse, #ffeac65c, #deedb826 45%, transparent 70%); }
 .prince-face { position: absolute; left: 34.8%; top: 12.4%; width: 30.4%; height: 24.2%; border-radius: 48% 48% 45% 45%; overflow: hidden; }
-.prince-face canvas { width: 100%; height: 100%; transform: scaleX(-1); }
+.prince-face canvas, #princess-face-canvas { width: 100%; height: 100%; transform: scaleX(-1); }
+#princess-face-canvas { display: block; border-radius: 50%; }
 .prince-label { position: absolute; bottom: -18px; width: 100%; margin: 0; text-align: center; font-size: 13px; letter-spacing: .12em; color: #fff1c9; text-shadow: 0 1px 6px #12382c; }
 .prince-close { position: absolute; top: 8px; right: 18%; width: 28px; height: 28px; border: 1px solid #fff6; border-radius: 50%; background: #17372ac9; color: #fff4ce; font-size: 22px; line-height: 1; pointer-events: auto; }
 .princess { position: absolute; bottom: 3%; left: 40%; width: min(16vw, 24svh, 180px); z-index: 3; transform: translateX(-50%); pointer-events: none; animation: princess-appear .6s ease-out; }
@@ -93,7 +94,7 @@ button:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
       <canvas id="magic" aria-hidden="true"></canvas>
       <section class="camera-controls" aria-label="내 얼굴 설정">
         <button id="camera-toggle" type="button" aria-pressed="false">내 얼굴 켜기</button>
-        <p id="camera-status" role="status">카메라를 켜면 얼굴을 찾아 왕자님에게 맞춰 줘요.</p>
+        <p id="camera-status" role="status">카메라에 먼저 들어온 얼굴은 왕자님, 두 번째 얼굴은 공주님에게 맞춰 줘요.</p>
         <div id="camera-preview" class="camera-preview" hidden>
           <video id="preview-video" autoplay muted playsinline aria-label="얼굴 위치 확인용 웹캠 영상"></video>
           <span>얼굴을 자동으로 따라가요</span>
@@ -184,9 +185,12 @@ button:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
         <path d="M68 140 Q90 150 113 140" fill="none" stroke="#f1cf92" stroke-width="4"/>
         <circle cx="90" cy="145" r="4" fill="#9de1ca"/>
         <ellipse cx="90" cy="64" rx="28" ry="35" fill="#f6d4bb"/>
-        <path d="M61 62 Q57 30 88 28 Q120 27 121 62 Q105 54 95 39 Q83 54 61 62Z" fill="#51342d"/>
         <path d="M77 65 L81 65 M99 65 L103 65" stroke="#55352d" stroke-width="2.4" stroke-linecap="round"/>
         <path d="M83 81 Q90 87 97 81" fill="none" stroke="#a45363" stroke-width="2" stroke-linecap="round"/>
+        <foreignObject x="62" y="29" width="56" height="70" aria-hidden="true">
+          <canvas id="princess-face-canvas" width="192" height="224" hidden></canvas>
+        </foreignObject>
+        <path d="M61 62 Q57 30 88 28 Q120 27 121 62 Q105 54 95 39 Q83 54 61 62Z" fill="#51342d"/>
         <circle cx="63" cy="78" r="3" fill="#f3cf80"/><circle cx="117" cy="78" r="3" fill="#f3cf80"/>
         <path d="M68 34 L63 15 L78 23 L90 8 L102 23 L117 15 L112 34 Q90 29 68 34Z" fill="#edc56c" stroke="#fff0bf" stroke-width="2"/>
         <path d="M90 18 L95 24 L90 29 L85 24Z" fill="#a34d7e"/>
@@ -466,7 +470,7 @@ function createFaceMapping(landmarks, videoWidth, videoHeight, width, height) {
   const rx = (maxX - minX) / 2, ry = (maxY - minY) / 2;
   if (rx < 8 || ry < 8) return null;
   const sourceCenter = { x: cx * ux - cy * uy, y: cx * uy + cy * ux };
-  // Stretch each face-outline section onto the prince's oval. The source
+  // Stretch each face-outline section onto the character's oval. The source
   // triangles contain facial pixels only, so the webcam background is excluded.
   const target = projected.map(point => {
     const angle = Math.atan2((point.y - cy) / ry, (point.x - cx) / rx);
@@ -516,7 +520,25 @@ function drawMappedFace(ctx, video, mapping, width, height) {
 }
 
 
-async function createFaceTracker(video, canvas, onStatus) {
+function assignFaces(faces, slots) {
+  if (slots.length === 1 || faces.length === 0) return faces;
+  const [first, second] = faces;
+  const [prince, princess] = slots;
+  const distance = (face, center) => center ? Math.hypot(face.center.x - center.x, face.center.y - center.y) : 0;
+
+  if (!second) {
+    const belongsToPrincess = princess.center && (!prince.center || distance(first, princess.center) < distance(first, prince.center));
+    return belongsToPrincess ? [null, first] : faces;
+  }
+
+  // If both appear together, the person on the left of the mirrored preview goes first.
+  if (!prince.center && !princess.center) return first.center.x >= second.center.x ? faces : [second, first];
+  const keep = distance(first, prince.center) + distance(second, princess.center);
+  const swap = distance(second, prince.center) + distance(first, princess.center);
+  return swap < keep ? [second, first] : faces;
+}
+
+async function createFaceTracker(video, canvases, onStatus) {
   const { FilesetResolver, FaceLandmarker } = await import(embeddedUrl('vision-module', 'text/javascript'));
   const simd = await FilesetResolver.isSimdSupported();
   const fileset = {
@@ -525,20 +547,31 @@ async function createFaceTracker(video, canvas, onStatus) {
   };
   const detector = await FaceLandmarker.createFromOptions(fileset, {
     baseOptions: { modelAssetBuffer: embeddedBytes('face-model'), delegate: 'CPU' },
-    runningMode: 'VIDEO', numFaces: 1,
+    runningMode: 'VIDEO', numFaces: canvases.length,
     minFaceDetectionConfidence: 0.6, minFacePresenceConfidence: 0.6,
     minTrackingConfidence: 0.6,
   });
-  canvas.width = 192;
-  canvas.height = 224;
-  const ctx = canvas.getContext('2d');
+  const width = 192;
+  const height = 224;
+  const slots = canvases.map(canvas => {
+    canvas.width = width;
+    canvas.height = height;
+    return { canvas, ctx: canvas.getContext('2d'), center: null, lastSeen: -Infinity };
+  });
   let frame = 0;
   let active = false;
   let disposed = false;
   let lastDetection = -Infinity;
   let lastVideoTime = -1;
-  let lastSeen = -Infinity;
   let lastStatus = '';
+
+  function hideFace(slot) {
+    if (!slot.canvas.hidden) {
+      slot.canvas.hidden = true;
+      slot.ctx.clearRect(0, 0, width, height);
+    }
+    slot.center = null;
+  }
 
   function status(value) {
     if (value !== lastStatus) { lastStatus = value; onStatus(value); }
@@ -549,20 +582,35 @@ async function createFaceTracker(video, canvas, onStatus) {
       lastVideoTime = video.currentTime;
       lastDetection = now;
       try {
-        const landmarks = detector.detectForVideo(video, now).faceLandmarks[0];
-        const mapping = createFaceMapping(landmarks, video.videoWidth, video.videoHeight, canvas.width, canvas.height);
-        if (mapping) {
-          drawMappedFace(ctx, video, mapping, canvas.width, canvas.height);
-          canvas.hidden = false;
-          lastSeen = now;
-          status('tracking');
-        } else if (now - lastSeen > 300) {
-          canvas.hidden = true;
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          status('searching');
-        }
+        const faces = detector.detectForVideo(video, now).faceLandmarks.flatMap(landmarks => {
+          const mapping = createFaceMapping(landmarks, video.videoWidth, video.videoHeight, width, height);
+          if (!mapping) return [];
+          const left = landmarks[33];
+          const right = landmarks[263];
+          const center = {
+            x: (left.x + right.x) * video.videoWidth / 2,
+            y: (left.y + right.y) * video.videoHeight / 2,
+          };
+          return [{ center, mapping }];
+        });
+        const assigned = assignFaces(faces, slots);
+        slots.forEach((slot, index) => {
+          const face = assigned[index];
+          if (face) {
+            drawMappedFace(slot.ctx, video, face.mapping, width, height);
+            slot.canvas.hidden = false;
+            slot.center = face.center;
+            slot.lastSeen = now;
+          } else if (now - slot.lastSeen > 300) {
+            hideFace(slot);
+          }
+        });
+        const princeVisible = !canvases[0].hidden;
+        const princessVisible = canvases[1] && !canvases[1].hidden;
+        if (princessVisible) status(princeVisible ? 'trackingBoth' : 'trackingPrincess');
+        else status(princeVisible ? 'tracking' : 'searching');
       } catch {
-        canvas.hidden = true;
+        slots.forEach(hideFace);
         status('error');
         active = false;
         return;
@@ -575,8 +623,7 @@ async function createFaceTracker(video, canvas, onStatus) {
     stop() {
       active = false;
       cancelAnimationFrame(frame);
-      canvas.hidden = true;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      slots.forEach(hideFace);
       if (!disposed) { disposed = true; detector.close(); }
     },
   };
@@ -592,6 +639,7 @@ const cameraStatus = document.querySelector('#camera-status');
 const preview = document.querySelector('#camera-preview');
 const previewVideo = document.querySelector('#preview-video');
 const faceCanvas = document.querySelector('#face-canvas');
+const princessFaceCanvas = document.querySelector('#princess-face-canvas');
 let trail = [];
 let lastPointTime = -Infinity;
 let stream = null;
@@ -652,7 +700,7 @@ document.querySelector('#prince-close').addEventListener('click', () => {
   gestureStatus.textContent = '큰 원을 그리면 왕자님이 다시 배를 타고 나타나요.';
 });
 
-function stopCamera(message = '카메라를 껐어요. 왕자님은 원래 얼굴로 돌아가요.') {
+function stopCamera(message = '카메라를 껐어요. 두 캐릭터가 원래 얼굴로 돌아가요.') {
   cameraSession++;
   faceTracker?.stop();
   faceTracker = null;
@@ -660,6 +708,7 @@ function stopCamera(message = '카메라를 껐어요. 왕자님은 원래 얼�
   stream = null;
   previewVideo.srcObject = null;
   faceCanvas.hidden = true;
+  princessFaceCanvas.hidden = true;
   preview.hidden = true;
   cameraButton.textContent = '내 얼굴 켜기';
   cameraButton.setAttribute('aria-pressed', 'false');
@@ -696,10 +745,12 @@ cameraButton.addEventListener('click', async () => {
     for (const track of stream.getVideoTracks()) {
       track.addEventListener('ended', () => { if (stream === acquired) stopCamera('카메라 연결이 끊겼어요. 연결한 뒤 다시 켜 주세요.'); }, { once: true });
     }
-    const tracker = await createFaceTracker(previewVideo, faceCanvas, status => {
+    const tracker = await createFaceTracker(previewVideo, [faceCanvas, princessFaceCanvas], status => {
       if (session !== cameraSession) return;
       const messages = {
-        tracking: '얼굴을 찾았어요! 움직여도 왕자님 얼굴에 맞춰 따라가요.',
+        tracking: '얼굴을 찾았어요! 한 사람이 더 들어오면 공주님 얼굴에 맞춰 줘요.',
+        trackingBoth: '두 얼굴을 찾았어요! 왕자님과 공주님 얼굴에 맞췄어요.',
+        trackingPrincess: '공주님 얼굴을 따라가고 있어요. 왕자님 얼굴을 다시 찾고 있어요.',
         searching: '얼굴을 찾고 있어요. 밝은 곳에서 카메라를 바라봐 주세요.',
         error: '얼굴 인식이 멈췄어요. 카메라를 껐다가 다시 켜 주세요.',
       };

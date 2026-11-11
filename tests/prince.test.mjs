@@ -9,9 +9,9 @@ const source = readFileSync(new URL('../prince.js', import.meta.url), 'utf8').re
 function setup(getUserMedia) {
   const elements = new Map();
   const windowEvents = {};
-  for (const id of ['.scene', '#prince', '#princess', '#gesture-status', '#camera-toggle', '#camera-status', '#camera-preview', '#preview-video', '#face-canvas', '#prince-close']) {
+  for (const id of ['.scene', '#prince', '#princess', '#gesture-status', '#camera-toggle', '#camera-status', '#camera-preview', '#preview-video', '#face-canvas', '#princess-face-canvas', '#prince-close']) {
     elements.set(id, {
-      hidden: ['#prince', '#princess', '#camera-preview', '#face-canvas'].includes(id),
+      hidden: ['#prince', '#princess', '#camera-preview', '#face-canvas', '#princess-face-canvas'].includes(id),
       disabled: false, style: {}, attributes: {}, events: {}, srcObject: null,
       addEventListener(name, handler) { this.events[name] = handler; },
       setAttribute(name, value) { this.attributes[name] = value; },
@@ -22,7 +22,10 @@ function setup(getUserMedia) {
   let time = 1000;
   vm.runInNewContext(source, {
     recognizeCircle,
-    createFaceTracker: async (video, canvas, onStatus) => ({ start() { canvas.hidden = false; onStatus('tracking'); }, stop() { canvas.hidden = true; } }),
+    createFaceTracker: async (video, canvases, onStatus) => ({
+      start() { for (const canvas of canvases) canvas.hidden = false; onStatus('trackingBoth'); },
+      stop() { for (const canvas of canvases) canvas.hidden = true; },
+    }),
     document: { querySelector: selector => elements.get(selector) },
     window: { addEventListener: (name, handler) => { windowEvents[name] = handler; } },
     navigator: { mediaDevices: { getUserMedia } },
@@ -67,12 +70,14 @@ test('camera button starts face tracking with the preview, with microphone disab
   assert.equal(requested.audio, false);
   assert.equal(elements.get('#preview-video').srcObject, stream);
   assert.equal(elements.get('#face-canvas').hidden, false);
-  assert.match(elements.get('#camera-status').textContent, /얼굴을 찾았어요/);
+  assert.equal(elements.get('#princess-face-canvas').hidden, false);
+  assert.match(elements.get('#camera-status').textContent, /두 얼굴을 찾았어요/);
   assert.equal(button.attributes['aria-pressed'], 'true');
   await button.events.click();
   assert.equal(stopped, 1);
   assert.equal(elements.get('#preview-video').srcObject, null);
   assert.equal(elements.get('#face-canvas').hidden, true);
+  assert.equal(elements.get('#princess-face-canvas').hidden, true);
   assert.equal(button.attributes['aria-pressed'], 'false');
 });
 
